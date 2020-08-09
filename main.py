@@ -102,7 +102,9 @@ def remoteOutlet():
     # Application Start Point
     outlet_status = machine.Pin(OUTLET_SENSE_PIN, machine.Pin.IN, machine.Pin.PULL_UP)
     outlet_control = machine.Pin(OUTLET_CONTROL_PIN, machine.Pin.OUT)
-    outlet_control.off()
+    # relay control is inverted
+    outlet_control.on()
+
     config = loadConfig()
     connectToWifi(config)
     while True:
@@ -110,10 +112,12 @@ def remoteOutlet():
         if run is not None:
             if run == True:
                 print("Outlet Control: ON")
-                outlet_control.on()
+                # relay control is inverted
+                outlet_control.off()
             else:
                 print("Outlet Control: OFF")
-                outlet_control.off()
+                # relay control is inverted
+                outlet_control.on()
 
         # The optocoupler's output is inverted
         value = 1 - outlet_status.value()

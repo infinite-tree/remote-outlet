@@ -1,4 +1,4 @@
-config.json
+config.py
 .pio
 .pioenvs
 *.pio

@@ -1,16 +1,15 @@
-
 import machine
+from micropython import const
 import network
 import ubinascii
-import ujson
 import urequests
 import time
 
-OUTLET_SENSE_PIN = 4
-OUTLET_CONTROL_PIN = 5
+OUTLET_SENSE_PIN = const(16)
+OUTLET_CONTROL_PIN = const(18)
 
-DATA_DELAY_SEC = 60
-CONNECTION_DELAY_SEC = 10
+DATA_DELAY_SEC = const(60)
+CONNECTION_DELAY_SEC = const(10)
 
 CONFIG_FILE = "config.json"
 CONFIG_WIFI_SSID = "WIFI_SSID"
@@ -32,26 +31,27 @@ WIFI.active(True)
 
 def loadConfig():
     print("Loading Config file")
-    with open(CONFIG_FILE) as f:
-        config = ujson.loads(f.read())
-        return config
+    import config
+    return config.config
 
 
-def sendDatapoint(config, measurement, value):
+def sendDatapoint(config, value):
     connectToWifi(config)
     url = config.get(CONFIG_INFLUXDB_URL)
-    auth = ubinascii.b2a_base64("%s:%s"%(config.get(CONFIG_INFLUXDB_USER), config.get(CONFIG_INFLUXDB_PASSWD)))
+    auth = ubinascii.b2a_base64("{}:{}".format(config.get(CONFIG_INFLUXDB_USER), config.get(CONFIG_INFLUXDB_PASSWD)))
     headers = {
         'Content-Type': 'text/plain',
         'Authorization': 'Basic ' + auth.decode().strip()
 
     }
-    name = config.get(CONFIG_SENSOR_NAME)
-    location = config.get(CONFIG_SENSOR_LOCATION)
-    data = "%s,location=%s,sensor=%s value=%d.0"%(measurement, location, name, value)
+    # name = config.get(CONFIG_SENSOR_NAME)
+    # location = config.get(CONFIG_SENSOR_LOCATION)
+    data = "{},location={},sensor={} value={}.0".format(MEASUREMENT,
+                                                        config.get(CONFIG_SENSOR_LOCATION),
+                                                        config.get(CONFIG_SENSOR_NAME),
+                                                        value)
     r = urequests.post(url, data=data, headers=headers)
-    results = r.text
-    if len(results) < 1:
+    if len(r.text) < 1:
         return True
     else:
         print(r.json())
@@ -68,7 +68,7 @@ def checkForRunCommand(config):
     try:
         r = urequests.get(url)
     except Exception as e:
-        print("Unable to access: %s"%(url))
+        print("Unable to access: {}".format(url))
         print(str(e))
         return None
 
@@ -86,7 +86,7 @@ def connectToWifi(config):
     while not WIFI.isconnected():
         ssid = config.get(CONFIG_WIFI_SSID)
         passwd = config.get(CONFIG_WIFI_PASSWD)
-        print("Connecting to %s"%(ssid))
+        print("Connecting to {}".format(ssid))
         WIFI.connect(ssid, passwd)
         for x in range(CONNECTION_DELAY_SEC):
             if WIFI.isconnected():
@@ -121,8 +121,8 @@ def remoteOutlet():
 
         # The optocoupler's output is inverted
         value = 1 - outlet_status.value()
-        print("Outlet status: %d"%value)
-        sendDatapoint(config, MEASUREMENT, value)
+        print("Outlet status: {}".format(value))
+        sendDatapoint(config, value)
 
         for x in range(DATA_DELAY_SEC):
             time.sleep(1)

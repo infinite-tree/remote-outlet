@@ -26,7 +26,7 @@ You have some kind of feedback telling you if the power if on or off:
 ```
 sudo apt get install esptool
 esptool.py --port /dev/ttyUSB0 erase_flash
-esptool.py --port /dev/ttyUSB0 --baud 460800 write_flash --flash_size=detect 0x1000 ./micro-python/esp32-idf4-20191220-v1.12.bin
+esptool.py --port /dev/ttyUSB0 --baud 460800 write_flash --flash_size=detect 0x1000 ./micro-python/esp32spiram-idf4-20191220-v1.12.bin
 ```
 
 

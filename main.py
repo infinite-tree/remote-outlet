@@ -5,7 +5,7 @@ import ubinascii
 import urequests
 import time
 
-OUTLET_SENSE_PIN = const(16)
+OUTLET_SENSE_PIN = const(4)
 OUTLET_CONTROL_PIN = const(18)
 
 DATA_DELAY_SEC = const(60)
@@ -32,7 +32,9 @@ WIFI.active(True)
 def loadConfig():
     print("Loading Config file")
     import config
-    return config.config
+    # there was a bug about memory needing to be in ram
+    # createing anew dict from the one in flash should do it..
+    return dict(config.config)
 
 
 def sendDatapoint(config, value):
@@ -44,8 +46,6 @@ def sendDatapoint(config, value):
         'Authorization': 'Basic ' + auth.decode().strip()
 
     }
-    # name = config.get(CONFIG_SENSOR_NAME)
-    # location = config.get(CONFIG_SENSOR_LOCATION)
     data = "{},location={},sensor={} value={}.0".format(MEASUREMENT,
                                                         config.get(CONFIG_SENSOR_LOCATION),
                                                         config.get(CONFIG_SENSOR_NAME),

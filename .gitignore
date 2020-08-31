@@ -1,4 +1,5 @@
 config.py
+micro-python/
 .pio
 .pioenvs
 *.pio
